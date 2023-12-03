@@ -4,6 +4,7 @@ import time
 from selenium.webdriver.common.by import By
 import tkinter as tk
 from selenium.webdriver.chrome.options import Options
+import re
 
 
 a = {
@@ -77,15 +78,20 @@ def getInfo(driver, type):
             arr.append(gpu)
         elif type == "ssd":
             ssd = ""
-            specs = product.find_elements(By.CSS_SELECTOR, ".spec_item")
-            for i in specs:
-                if "" in i.text:
-                    ssd = i.text
+            specs = product.find_element(By.CSS_SELECTOR, ".prod_name > strong")
+            if "TB" in specs.text or "GB" in specs.text:
+                ssd = specs.text
+            # 정규 표현식을 사용하여 괄호 안의 문자열 추출
+            match = re.search(r'\((.*?)\)', ssd)
+            if match:
+                extracted_string = match.group(1)
+                ssd = extracted_string
             ssd = {
                 "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > strong").text,
                 "price" : product.find_element(By.CSS_SELECTOR, ".low_price > dd").text,
                 "capacity" :ssd
             }
+            arr.append(ssd)
         elif type == "hdd":
             hdd = ""
             specs = product.find_elements(By.CSS_SELECTOR, ".spec_item")
@@ -104,14 +110,12 @@ def getInfo(driver, type):
                 "price" : product.find_element(By.CSS_SELECTOR, ".low_price > dd").text
             }
             arr.append(mainboard)
-
-
     return arr
 
 chrome_options = Options()
 driver = webdriver.Chrome()
-cpuArr = getInfo(driver, "hdd")
-
+cpuArr = getInfo(driver, "ssd")
+print()
 # # Tkinter 윈도우 생성
 # window = tk.Tk()
 # window.title("Tkinter 예제")
