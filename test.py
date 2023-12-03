@@ -3,7 +3,9 @@ from selenium.webdriver.common.keys import Keys
 import time
 from selenium.webdriver.common.by import By
 import tkinter as tk
-print()
+from selenium.webdriver.chrome.options import Options
+
+
 a = {
     "CPU" : "",
     "RAM" : "",
@@ -15,71 +17,108 @@ a = {
 def getInfo(driver, type):
     arr = []
     if type == "cpu":
-            driver.get("https://prod.danawa.com/list/?cate=21349942")
+        driver.get("https://shop.danawa.com/main/?controller=goods&methods=search&keyword=cpu")
     elif type == "ram":
-        driver.get("https://prod.danawa.com/list/?cate=21349943")
+        driver.get("https://shop.danawa.com/main/?controller=goods&methods=search&keyword=%EC%BB%B4%ED%93%A8%ED%84%B0%20%EB%9E%A8")
     elif type == "gpu":
-        driver.get("https://prod.danawa.com/list/?cate=21349945")
+        driver.get("https://shop.danawa.com/main/?controller=goods&methods=search&keyword=%EA%B7%B8%EB%9E%98%ED%94%BD%EC%B9%B4%EB%93%9C")
     elif type == "ssd":
-        driver.get("https://prod.danawa.com/list/?cate=21349946")
-    elif type == "ssd":
-        driver.get("https://prod.danawa.com/list/?cate=21349947")
+        driver.get("https://shop.danawa.com/main/?controller=goods&methods=search&keyword=ssd")
+    elif type == "hdd":
+        driver.get("https://shop.danawa.com/main/?controller=goods&methods=search&keyword=hdd")
     elif type == "mainboard":
-        driver.get("https://prod.danawa.com/list/?cate=21349944")
+        driver.get("https://shop.danawa.com/main/?controller=goods&methods=search&keyword=%EB%A9%94%EC%9D%B8%EB%B3%B4%EB%93%9C")
 
     driver.implicitly_wait(5)
+    # 샵 다나와 클릭
+    driver.find_element(By.CSS_SELECTOR, "#searchGoods").click()
+    time.sleep(2)
     # 물건
     products = driver.find_elements(By.CSS_SELECTOR, ".prod_item")
     for product in products:
         if type == "cpu":
+            core = ""
+            specs = product.find_elements(By.CSS_SELECTOR, ".spec_item")
+            for i in specs:
+                if "코어" in i.text:
+                    core = i.text
+
             cpu = {
-                "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > a").text,
-                "price" : product.find_element(By.CSS_SELECTOR, ".main_price > a > .low_price > dd > span").text
+                "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > strong").text,
+                "price" : product.find_element(By.CSS_SELECTOR, ".low_price > dd").text,
+                "core" : core
             }
+
             arr.append(cpu)
+
         elif type == "ram":
+            ddr = ""
+            specs = product.find_elements(By.CSS_SELECTOR, ".spec_item")
+            for i in specs:
+                if "DDR" in i.text:
+                    ddr = i.text
             ram = {
-                "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > a").text,
-                "price" : product.find_element(By.CSS_SELECTOR, ".main_price > a > .low_price > dd > span").text
+               "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > strong").text,
+                "price" : product.find_element(By.CSS_SELECTOR, ".low_price > dd").text,
+                "ddr" : ddr
             }
             arr.append(ram)
         elif type == "gpu":
+            gpu = ""
+            specs = product.find_elements(By.CSS_SELECTOR, ".spec_item")
+            for i in specs:
+                if "스트림 프로세서" in i.text:
+                    gpu = i.text
             gpu = {
-                "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > a").text,
-                "price" : product.find_element(By.CSS_SELECTOR, ".main_price > a > .low_price > dd > span").text
+                "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > strong").text,
+                "price" : product.find_element(By.CSS_SELECTOR, ".low_price > dd").text,
+                "processor" :gpu
             }
             arr.append(gpu)
-        elif type == "ssdhdd":
-            ssdhdd = {
-                "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > a").text,
-                "price" : product.find_element(By.CSS_SELECTOR, ".main_price > a > .low_price > dd > span").text
+        elif type == "ssd":
+            ssd = ""
+            specs = product.find_elements(By.CSS_SELECTOR, ".spec_item")
+            for i in specs:
+                if "" in i.text:
+                    ssd = i.text
+            ssd = {
+                "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > strong").text,
+                "price" : product.find_element(By.CSS_SELECTOR, ".low_price > dd").text,
+                "capacity" :ssd
             }
-            arr.append(ssdhdd)
+        elif type == "hdd":
+            hdd = ""
+            specs = product.find_elements(By.CSS_SELECTOR, ".spec_item")
+            for i in specs:
+                if "메모리" in i.text:
+                    hdd = i.text
+            hdd = {
+                "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > strong").text,
+                "price" : product.find_element(By.CSS_SELECTOR, ".low_price > dd").text,
+                "capacity" :hdd
+            }
+            arr.append(hdd)
         elif type == "mainboard":
             mainboard = {
-                "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > a").text,
-                "price" : product.find_element(By.CSS_SELECTOR, ".main_price > a > .low_price > dd > span").text
+                "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > strong").text,
+                "price" : product.find_element(By.CSS_SELECTOR, ".low_price > dd").text
             }
             arr.append(mainboard)
 
 
     return arr
 
+chrome_options = Options()
 driver = webdriver.Chrome()
-cpuArr = getInfo(driver, "ram")
+cpuArr = getInfo(driver, "hdd")
 
-# 윈도우 생성
-window = tk.Tk()
-window.title("컴퓨터 부품 선택 알고리즘")
-window.geometry("400x300")
+# # Tkinter 윈도우 생성
+# window = tk.Tk()
+# window.title("Tkinter 예제")
 
-# 라벨 생성
-label = tk.Label(window, text="환영합니다!")
-label.pack(padx=10, pady=10)
+# # 입력 상자 생성
+# entry = tk.Entry(window)
+# entry.grid(row=0, column=1)
 
-# 버튼 생성
-button = tk.Button(window, text="인사하기")
-button.pack(padx=10, pady=10)
-
-# 윈도우 실행
-window.mainloop()
+# # Tkinter 이벤트 루프 시작
+# window.mainloop()
