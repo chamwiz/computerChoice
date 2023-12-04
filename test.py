@@ -38,20 +38,13 @@ def getInfo(driver, type):
     products = driver.find_elements(By.CSS_SELECTOR, ".prod_item")
     for product in products:
         if type == "cpu":
-            core = ""
-            specs = product.find_elements(By.CSS_SELECTOR, ".spec_item")
-            for i in specs:
-                if "코어" in i.text:
-                    core = i.text
-
+            print()
             cpu = {
                 "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > strong").text,
                 "price" : product.find_element(By.CSS_SELECTOR, ".low_price > dd").text,
-                "core" : core
+                "score" : 0
             }
-
             arr.append(cpu)
-
         elif type == "ram":
             ddr = ""
             specs = product.find_elements(By.CSS_SELECTOR, ".spec_item")
@@ -65,15 +58,10 @@ def getInfo(driver, type):
             }
             arr.append(ram)
         elif type == "gpu":
-            gpu = ""
-            specs = product.find_elements(By.CSS_SELECTOR, ".spec_item")
-            for i in specs:
-                if "스트림 프로세서" in i.text:
-                    gpu = i.text
             gpu = {
                 "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > strong").text,
                 "price" : product.find_element(By.CSS_SELECTOR, ".low_price > dd").text,
-                "processor" :gpu
+                "score" :0
             }
             arr.append(gpu)
         elif type == "ssd":
@@ -92,37 +80,33 @@ def getInfo(driver, type):
                 "capacity" :ssd
             }
             arr.append(ssd)
-        elif type == "hdd":
-            hdd = ""
-            specs = product.find_elements(By.CSS_SELECTOR, ".spec_item")
-            for i in specs:
-                if "메모리" in i.text:
-                    hdd = i.text
-            hdd = {
-                "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > strong").text,
-                "price" : product.find_element(By.CSS_SELECTOR, ".low_price > dd").text,
-                "capacity" :hdd
-            }
-            arr.append(hdd)
-        elif type == "mainboard":
-            mainboard = {
-                "name" : product.find_element(By.CSS_SELECTOR, ".prod_name > strong").text,
-                "price" : product.find_element(By.CSS_SELECTOR, ".low_price > dd").text
-            }
-            arr.append(mainboard)
     return arr
+
+def getScore(driver, arr, type):
+    if type == "cpu":
+        for i in arr:
+            name = i["name"]
+            # 정규표현식을 사용하여 연속된 숫자 뒤에 문자까지 추출
+            matches = re.findall(r'\d+[^\s]*', name)
+            # 리스트의 마지막 항목 가져오기
+            if matches:
+                last_match = matches[-1]
+            else:
+                last_match = ""
+            driver.get("https://cpu-benchmark.org/search?k=" + last_match)
+            driver.implicitly_wait(2)
+            try:
+                score = driver.find_element(By.CSS_SELECTOR, 'body > div.container.mt-3.p-3.frame > div:nth-child(2) > div > div > table > tbody > tr > td:nth-child(5)').click().text
+                i["score"] = score
+            except:
+                pass
+    elif type == "gpu":
+        pass
 
 chrome_options = Options()
 driver = webdriver.Chrome()
-cpuArr = getInfo(driver, "ssd")
+cpuArr = getInfo(driver, "cpu")
+getScore(driver, cpuArr, "cpu")
 print()
-# # Tkinter 윈도우 생성
-# window = tk.Tk()
-# window.title("Tkinter 예제")
 
-# # 입력 상자 생성
-# entry = tk.Entry(window)
-# entry.grid(row=0, column=1)
 
-# # Tkinter 이벤트 루프 시작
-# window.mainloop()
